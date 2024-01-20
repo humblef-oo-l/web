@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Drawing - Hamiltonian Cycle</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+        canvas {
+            display: block;
+        }
+        #userDetailsForm {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: block; /* Changed from 'none' to 'block' for testing */
+        }
+    </style>
+</head>
+<body>
+    <div id="userDetailsForm">
+        <form id="userForm">
+            <label for="name">Name:</label>
+            <input type="text" id="name" required><br>
+            <label for="age">Age:</label>
+            <input type="number" id="age" required><br>
+            <label for="gender">Gender:</label>
+            <select id="gender" required>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+            </select><br>
+            <button type="button" onclick="submitUserDetails()">Submit Details</button>
+        </form>
+    </div>
+
+    <canvas id="drawingCanvas"></canvas>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const canvas = document.getElementById("drawingCanvas");
+            const ctx = canvas.getContext("2d");
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const customGraph = [
+                { x: 234, y: 531 },
+                { x: 453, y: 782 },
+                { x: 652, y: 193 },
+                { x: 823, y: 419 }, // Starting node
+                { x: 376, y: 615 },
+                { x: 524, y: 327 },
+                { x: 945, y: 482 },
+                { x: 172, y: 872 },
+                { x: 891, y: 259 },
+                { x: 347, y: 714 },
+                { x: 603, y: 338 },
+                { x: 814, y: 532 },
+                { x: 295, y: 924 },
+                { x: 479, y: 381 },
+                { x: 721, y: 916 },
+                { x: 834, y: 149 },
+                { x: 883, y: 413 },
+                { x: 567, y: 195 },
+                { x: 926, y: 687 },
+                { x: 358, y: 826 },
+            ];
+
+            drawPoints(customGraph);
+
+            let isDrawing = false;
+            let startPoint;
+            let endPoint;
+            let successfulLines = [];
+            let visitedNodes = new Set();
+            let startNodeCounter = 0;
+            let currentCycle = [];
+            let CopyOfStartPoint = null;
+            let totalDistance = 0;
+
+            // Set the starting node to the 4th point in the array
+            startPoint = customGraph[3];
+            CopyOfStartPoint = startPoint;
+            visitedNodes.add(startPoint);
+            visitedNodes.add(CopyOfStartPoint);
+            currentCycle.push(startPoint);
+
+            drawPoints(customGraph);
+
+            canvas.addEventListener("mousedown", startDrawing);
+            canvas.addEventListener("mouseup", stopDrawing);
+            canvas.addEventListener("mousemove", drawLine);
+
+            function startDrawing(event) {
+                if (currentCycle.length) {
+                    startPoint = currentCycle[currentCycle.length - 1];
+                } else if (!visitedNodes.has(CopyOfStartPoint)) {
+                    startPoint = CopyOfStartPoint;
+                }
+
+                endPoint = getMousePosition(event);
+                isDrawing = true;
+            }
+
+            function stopDrawing() {
+                if (isDrawing && endPoint) {
+                    const endNode = getClosestNode(endPoint, customGraph);
+                    if (endNode && !visitedNodes.has(endNode)) {
+                        const distance = calculateDistance(startPoint, endNode);
+                        successfulLines.push({ start: startPoint, end: endNode, distance });
+                        currentCycle.push(endNode);
+                        visitedNodes.add(endNode);
+                        totalDistance += distance; // Add the distance to the total
+                    }
+                }
+                isDrawing = false;
+                endPoint = null;
+
+                if (visitedNodes.size === customGraph.length) {
+                    if (!startNodeCounter) {
+                        visitedNodes.delete(CopyOfStartPoint);
+                        const lastNodeInCycle = currentCycle[currentCycle.length - 1];
+                        successfulLines.push({
+                            start: lastNodeInCycle,
+                            end: CopyOfStartPoint,
+                            distance: calculateDistance(lastNodeInCycle, CopyOfStartPoint),
+                        });
+                        totalDistance += calculateDistance(lastNodeInCycle, CopyOfStartPoint); // Add the last distance
+                        drawStraightLine(lastNodeInCycle, CopyOfStartPoint, calculateDistance(lastNodeInCycle, CopyOfStartPoint));
+                        const canvasDataURL = canvas.toDataURL();
+                        submitUserDetails({
+                            name: document.getElementById('name').value,
+                            age: document.getElementById('age').value,
+                            gender: document.getElementById('gender').value,
+                            canvasDataURL: canvasDataURL,
+                            totalDistance: totalDistance.toFixed(2),
+                        });
+                        
+                      
+                        ctx.fillStyle = "#000";
+                        ctx.font = "20px Arial";
+                        ctx.fillText("Score: " + totalDistance.toFixed(2), canvas.width - 150, 30);
+
+                        setTimeout(() => {
+                            location.reload();
+                        }, 5000);
+                        startNodeCounter += 1;
+                    } else {
+                        location.reload();
+                    }
+                }
+            }
+
+            function drawLine(event) {
+                if (!isDrawing) return;
+
+                endPoint = getMousePosition(event);
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawPoints(customGraph);
+
+                successfulLines.forEach(line => drawStraightLine(line.start, line.end, line.distance));
+
+                if (startPoint && endPoint) {
+                    drawStraightLine(startPoint, endPoint, calculateDistance(startPoint, endPoint));
+                }
+            }
+
+            function drawPoints(points) {
+                ctx.fillStyle = "#000";
+                points.forEach(point => {
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+                    ctx.fill();
+                });
+            }
+
+            function drawStraightLine(start, end, distance) {
+                ctx.beginPath();
+                ctx.moveTo(start.x, start.y);
+                ctx.lineTo(end.x, end.y);
+                ctx.stroke();
+
+                // Display distance at the middle point
+                const middleX = (start.x + end.x) / 2;
+                const middleY = (start.y + end.y) / 2;
+
+                ctx.fillStyle = "#000";
+                ctx.font = "12px Arial";
+                ctx.fillText(distance.toFixed(2), middleX, middleY);
+            }
+
+            function calculateDistance(point1, point2) {
+                return Math.sqrt((point2.x - point1.x) ** 2 + (point2.y - point1.y) ** 2);
+            }
+
+            function getMousePosition(event) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: event.clientX - rect.left,
+                    y: event.clientY - rect.top
+                };
+            }
+
+            function getClosestNode(position, nodes) {
+                const threshold = 10;
+                for (const node of nodes) {
+                    const distance = Math.sqrt((node.x - position.x) ** 2 + (node.y - position.y) ** 2);
+                    if (distance < threshold) {
+                        return node;
+                    }
+                }
+                return null;
+            }
+        });
+        
+         function submitUserDetails(userDetails) {
+            fetch('/user-details', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userDetails),
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                startTask();
+            })
+            .catch(error => console.error(error));
+        }
+    </script>
+</body>
+</html>
+
