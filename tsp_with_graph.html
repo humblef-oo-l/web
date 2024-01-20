@@ -16,7 +16,7 @@
         #userDetailsForm {
             position: absolute;
             top: 50%;
-            left: 50%;
+            left: 20%;
             transform: translate(-50%, -50%);
             background-color: #fff;
             padding: 20px;
@@ -150,10 +150,10 @@
                         ctx.fillStyle = "#000";
                         ctx.font = "20px Arial";
                         ctx.fillText("Score: " + totalDistance.toFixed(2), canvas.width - 150, 30);
-
-                        setTimeout(() => {
-                            location.reload();
-                        }, 5000);
+                        console.log("Thnak You!);
+                        // setTimeout(() => {
+                        //     location.reload();
+                        // }, 5000);
                         startNodeCounter += 1;
                     } else {
                         location.reload();
