@@ -13,16 +13,16 @@
         canvas {
             display: block;
         }
-        #userDetailsForm {
+/*         #userDetailsForm {
     position: absolute;
-    top: 50px; /* Adjust the top value to your desired distance from the top */
-    right: 20px; /* Adjust the right value to your desired distance from the right */
+    top: 50px; 
+    right: 20px;
     background-color: #fff;
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    display: block; /* Changed from 'none' to 'block' for testing */
-}
+    display: block; /* from 'none' to 'block' for testing */
+} */
 
     </style>
 </head>
@@ -138,13 +138,13 @@
                         totalDistance += calculateDistance(lastNodeInCycle, CopyOfStartPoint); // Add the last distance
                         drawStraightLine(lastNodeInCycle, CopyOfStartPoint, calculateDistance(lastNodeInCycle, CopyOfStartPoint));
                         const canvasDataURL = canvas.toDataURL();
-                        submitUserDetails({
-                            name: document.getElementById('name').value,
-                            age: document.getElementById('age').value,
-                            gender: document.getElementById('gender').value,
-                            canvasDataURL: canvasDataURL,
-                            totalDistance: totalDistance.toFixed(2),
-                        });
+                        // submitUserDetails({
+                        //     name: document.getElementById('name').value,
+                        //     age: document.getElementById('age').value,
+                        //     gender: document.getElementById('gender').value,
+                        //     canvasDataURL: canvasDataURL,
+                        //     totalDistance: totalDistance.toFixed(2),
+                        // });
                         
                       
                         ctx.fillStyle = "#000";
@@ -224,21 +224,21 @@
             }
         });
         
-         function submitUserDetails(userDetails) {
-            fetch('/user-details', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(userDetails),
-            })
-            .then(response => response.text())
-            .then(data => {
-                alert(data);
-                startTask();
-            })
-            .catch(error => console.error(error));
-        }
+        //  function submitUserDetails(userDetails) {
+        //     fetch('/user-details', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify(userDetails),
+        //     })
+        //     .then(response => response.text())
+        //     .then(data => {
+        //         alert(data);
+        //         startTask();
+        //     })
+        //     .catch(error => console.error(error));
+        // }
     </script>
 </body>
 </html>
